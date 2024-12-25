@@ -1,57 +1,86 @@
 # Render Ping Service
 
-A simple Node.js service that pings a Render deployment URL at regular intervals to prevent it from sleeping.
+A robust Node.js service that pings multiple Render deployment URLs at regular intervals to prevent them from sleeping.
 
 ## Features
-- Automatically pings specified URL every minute
-- Console logging of ping status with timestamps
-- Error handling for failed requests
+- Supports multiple URLs for concurrent pinging
+- Configurable ping intervals per URL
+- Detailed logging with timestamp and status
+- Docker support for containerized deployment
+- Automatic retry on failed requests
+- Health check endpoint
+- Prometheus metrics support
 
 ## Requirements
-- Node.js 12.x or higher
+- Node.js 14.x or higher
 - npm (Node Package Manager)
+- Docker (optional)
 
 ## Installation
-1. Clone this repository
-2. Install dependencies:
+
+### Standard Installation
 ```bash
 npm install
 ```
 
-## Configuration
-1. Create a `.env` file in the project root:
+### Docker Installation
 ```bash
-URL_TO_PING=your-render-url
-PING_INTERVAL=60000
+docker build -t render-ping-service .
+docker run -d -p 3000:3000 render-ping-service
 ```
 
-2. Configure the environment variables:
-- `URL_TO_PING`: The URL of your Render deployment to ping
-- `PING_INTERVAL`: Time between pings in milliseconds (default: 60000)
+## Configuration
+
+### Environment Variables
+Create a `.env` file:
+```bash
+# Required
+URLS_TO_PING=["https://app1.render.com","https://app2.render.com"]
+PING_INTERVAL=60000
+
+# Optional
+PORT=3000
+RETRY_ATTEMPTS=3
+RETRY_DELAY=5000
+METRICS_ENABLED=true
+```
 
 ## Usage
-Start the service:
+
+### Local Development
+```bash
+npm run dev
+```
+
+### Production
 ```bash
 npm start
 ```
 
-The service will automatically:
-- Start pinging the specified URL at the configured interval
-- Log successful pings and any errors to the console
-- Continue running until stopped with Ctrl+C
+### Docker
+```bash
+docker-compose up
+```
+
+## API Endpoints
+- `GET /health` - Service health check
+- `GET /metrics` - Prometheus metrics
+- `GET /status` - Ping status for all URLs
 
 ## Scripts
-- `npm start`: Start the ping service
-- `npm run dev`: Run with nodemon for development
-- `npm test`: Run tests (if configured)
+- `npm start` - Production mode
+- `npm run dev` - Development mode with hot reload
+- `npm run lint` - Run ESLint
+- `npm run test` - Run tests
+- `npm run build` - Build for production
 
-## Troubleshooting
-- Ensure your URL is correctly formatted and accessible
-- Check console logs for any error messages
-- Verify your environment variables are properly set
+## Monitoring
+- Built-in Prometheus metrics
+- Health check endpoint
+- Detailed logging with Winston
 
 ## License
 MIT License
 
 ## Contributing
-Pull requests are welcome. For major changes, please open an issue first.
+Contributions welcome! Please read our contributing guidelines first.
