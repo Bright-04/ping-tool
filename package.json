@@ -1,18 +1,33 @@
 {
-  "name": "render-ping",
+  "name": "ping-tool",
   "version": "1.0.0",
+  "description": "A robust ping service with both CLI and desktop GUI interfaces for keeping Render deployments awake",
   "main": "main.js",
+  "author": "Bright-04",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Bright-04/ping-tool.git"
+  },
   "scripts": {
     "start": "electron .",
-    "dev": "nodemon --exec electron ."
+    "dev": "nodemon --exec electron .",
+    "cli": "node index.js",
+    "cli:dev": "nodemon index.js",
+    "install:all": "npm install && cd render-ping && npm install",
+    "clean": "rimraf node_modules package-lock.json && cd render-ping && rimraf node_modules package-lock.json"
   },
   "dependencies": {
     "chalk": "^4.1.2",
-    "dotenv": "^16.0.3",
-    "electron": "^23.3.13",
-    "node-fetch": "^2.6.7"
+    "dotenv": "^16.4.5",
+    "electron": "^32.0.1",
+    "node-fetch": "^2.7.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
+    "nodemon": "^3.1.4",
+    "rimraf": "^5.0.9"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }

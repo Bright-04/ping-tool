@@ -10,21 +10,58 @@ function createWindow() {
         height: 600,
         webPreferences: {
             nodeIntegration: true,
-            contextIsolation: false
-        }
+            contextIsolation: false, // TODO: Enable this for better security
+            enableRemoteModule: false
+        },
+        icon: path.join(__dirname, 'assets', 'icon.png'), // Moved to assets folder
+        show: false // Don't show immediately
     });
 
     mainWindow.loadFile('index.html');
+    
+    // Show window when ready
+    mainWindow.once('ready-to-show', () => {
+        mainWindow.show();
+    });
+
     mainWindow.on('minimize', (event) => {
         event.preventDefault();
         mainWindow.hide();
     });
+
+    mainWindow.on('close', (event) => {
+        if (!app.isQuiting) {
+            event.preventDefault();
+            mainWindow.hide();
+        }
+    });
 }
 
 function createTray() {
-    tray = new Tray(path.join(__dirname, 'icon.png'));
-    tray.setToolTip('Render Ping Tool');
-    tray.on('click', () => mainWindow.show());
+    const iconPath = path.join(__dirname, 'assets', 'icon.png');
+    tray = new Tray(iconPath);
+    
+    const contextMenu = Menu.buildFromTemplate([
+        {
+            label: 'Show App',
+            click: () => {
+                mainWindow.show();
+            }
+        },
+        {
+            label: 'Quit',
+            click: () => {
+                app.isQuiting = true;
+                app.quit();
+            }
+        }
+    ]);
+    
+    tray.setToolTip('Ping Tool - Keep your Render apps awake');
+    tray.setContextMenu(contextMenu);
+    tray.on('click', () => {
+        mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
+    });
 }
 
 app.whenReady().then(() => {
