@@ -1,0 +1,138 @@
+name: Keep Render Services Awake
+
+on:
+  schedule:
+    # Run every hour (GitHub Actions limitation: minimum 5 minutes)
+    - cron: '0 * * * *'
+  workflow_dispatch: # Allow manual triggering
+    inputs:
+      url:
+        description: 'URL to ping (optional, uses secrets if not provided)'
+        required: false
+        type: string
+      duration:
+        description: 'Duration in minutes (max 30 for Actions)'
+        required: false
+        default: '10'
+        type: string
+
+jobs:
+  ping-service:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci --only=production
+      
+    - name: Run ping service
+      env:
+        URL_TO_PING: ${{ inputs.url || secrets.URL_TO_PING }}
+        PING_INTERVAL: 60000  # 1 minute intervals
+        TIMEOUT: 10000       # 10 second timeout
+        DURATION_MINUTES: ${{ inputs.duration || 10 }}
+      run: |
+        echo "🚀 Starting GitHub Actions ping service"
+        echo "📡 Target URL: $URL_TO_PING"
+        echo "⏱️  Duration: $DURATION_MINUTES minutes"
+        echo "🔄 Ping interval: $PING_INTERVAL ms"
+        
+        if [ -z "$URL_TO_PING" ]; then
+          echo "❌ Error: URL_TO_PING not set"
+          echo "Set it in repository secrets or provide via workflow input"
+          exit 1
+        fi
+        
+        # Create a modified version that runs for specified duration
+        node -e "
+        const fetch = require('node-fetch');
+        const chalk = require('chalk');
+        
+        const URL_TO_PING = process.env.URL_TO_PING;
+        const PING_INTERVAL = parseInt(process.env.PING_INTERVAL || '60000');
+        const TIMEOUT = parseInt(process.env.TIMEOUT || '10000');
+        const DURATION_MS = parseInt(process.env.DURATION_MINUTES || '10') * 60 * 1000;
+        
+        console.log(chalk.cyan('='.repeat(60)));
+        console.log(chalk.cyan('🚀 GitHub Actions Ping Service Started'));
+        console.log(chalk.cyan(\`📡 Target: \${URL_TO_PING}\`));
+        console.log(chalk.cyan(\`⏱️  Duration: \${DURATION_MS/1000/60} minutes\`));
+        console.log(chalk.cyan(\`🔄 Interval: \${PING_INTERVAL/1000} seconds\`));
+        console.log(chalk.cyan('='.repeat(60)));
+        
+        let pings = 0;
+        let successes = 0;
+        let startTime = Date.now();
+        
+        async function ping() {
+          const requestStart = Date.now();
+          try {
+            const controller = new AbortController();
+            setTimeout(() => controller.abort(), TIMEOUT);
+            
+            const response = await fetch(URL_TO_PING, {
+              signal: controller.signal,
+              headers: { 'User-Agent': 'GitHub-Actions-Ping-Service/1.0' }
+            });
+            
+            const responseTime = Date.now() - requestStart;
+            pings++;
+            if (response.ok) successes++;
+            
+            console.log(
+              chalk.gray(\`[\${new Date().toISOString()}]\`),
+              response.ok ? chalk.green('✓') : chalk.red('✗'),
+              \`Status: \${response.status}\`,
+              chalk.cyan(\`(\${responseTime}ms)\`)
+            );
+            
+          } catch (error) {
+            pings++;
+            const responseTime = Date.now() - requestStart;
+            console.log(
+              chalk.gray(\`[\${new Date().toISOString()}]\`),
+              chalk.red('✗'),
+              chalk.red(\`\${error.message} (\${responseTime}ms)\`)
+            );
+          }
+        }
+        
+        // Initial ping
+        await ping();
+        
+        const interval = setInterval(async () => {
+          if (Date.now() - startTime >= DURATION_MS) {
+            clearInterval(interval);
+            
+            console.log(chalk.cyan('='.repeat(60)));
+            console.log(chalk.cyan('📊 Ping Service Summary'));
+            console.log(chalk.cyan(\`Total pings: \${pings}\`));
+            console.log(chalk.cyan(\`Successful: \${successes}\`));
+            console.log(chalk.cyan(\`Success rate: \${Math.round((successes/pings)*100)}%\`));
+            console.log(chalk.cyan(\`Duration: \${Math.round((Date.now()-startTime)/1000/60)} minutes\`));
+            console.log(chalk.cyan('✅ GitHub Actions ping service completed'));
+            console.log(chalk.cyan('='.repeat(60)));
+            process.exit(0);
+          }
+          
+          await ping();
+        }, PING_INTERVAL);
+        "
+        
+    - name: Upload ping logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ping-logs-${{ github.run_number }}
+        path: |
+          *.log
+        retention-days: 7

@@ -18,6 +18,12 @@ A dual-interface ping service for keeping Render.com deployments awake by pingin
 - ✅ Graceful shutdown handling
 - ✅ Process monitoring and error handling
 
+### GitHub Integration
+- ✅ **GitHub Actions** - Scheduled pinging workflows
+- ✅ **GitHub Pages** - Web-based interface (CORS limitations apply)
+- ✅ **Automated deployment** - CI/CD ready
+- ✅ **Repository secrets** - Secure URL configuration
+
 ## Requirements
 - Node.js 16.x or higher
 - npm (Node Package Manager)
@@ -47,6 +53,22 @@ npm run cli
 
 # CLI development mode
 npm run cli:dev
+```
+
+### GitHub Actions (Scheduled Pinging)
+```bash
+# 1. Add repository secret: URL_TO_PING=https://your-app.onrender.com
+# 2. Enable GitHub Actions in repository settings
+# 3. Workflows run automatically every hour
+
+# Manual trigger from Actions tab or:
+gh workflow run ping-service.yml
+```
+
+### GitHub Pages (Web Interface)
+```bash
+# Automatically deployed to: https://username.github.io/ping-tool
+# Limited by browser CORS policies
 ```
 
 ## Configuration

@@ -1,0 +1,94 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Build site
+        run: |
+          mkdir -p _site
+          cp web/index.html _site/
+          cp readme.md _site/README.md
+          
+          # Create a simple landing page
+          cat > _site/README.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Ping Tool</title>
+              <style>
+                  body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+                  .btn { display: inline-block; padding: 15px 30px; margin: 10px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+                  .btn-primary { background: #007bff; color: white; }
+                  .btn-secondary { background: #6c757d; color: white; }
+              </style>
+          </head>
+          <body>
+              <h1>🚀 Ping Tool</h1>
+              <p>A dual-interface ping service for keeping Render.com deployments awake.</p>
+              
+              <h2>Available Versions:</h2>
+              <a href="index.html" class="btn btn-primary">🌐 Web Version (Limited by CORS)</a>
+              <a href="https://github.com/Bright-04/ping-tool" class="btn btn-secondary">💻 Download Desktop/CLI Version</a>
+              
+              <h2>GitHub Actions Integration:</h2>
+              <p>This repository includes a GitHub Actions workflow that can ping your services automatically on a schedule.</p>
+              
+              <h3>Setup Instructions:</h3>
+              <ol>
+                  <li>Go to your repository Settings → Secrets and variables → Actions</li>
+                  <li>Add a new secret called <code>URL_TO_PING</code> with your service URL</li>
+                  <li>The workflow will run automatically every hour</li>
+                  <li>You can also trigger it manually from the Actions tab</li>
+              </ol>
+              
+              <h3>Features:</h3>
+              <ul>
+                  <li>✅ Scheduled pinging via GitHub Actions</li>
+                  <li>✅ Web interface for CORS-enabled URLs</li>
+                  <li>✅ Desktop application for unrestricted pinging</li>
+                  <li>✅ CLI service for server deployments</li>
+              </ul>
+          </body>
+          </html>
+          EOF
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
