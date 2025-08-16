@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage } = require('electron');
 const path = require('path');
 
 let mainWindow;
@@ -39,7 +39,23 @@ function createWindow() {
 
 function createTray() {
     const iconPath = path.join(__dirname, 'assets', 'icon.png');
-    tray = new Tray(iconPath);
+    
+    // Check if icon exists, use default if not
+    let trayIcon;
+    try {
+        if (require('fs').existsSync(iconPath)) {
+            trayIcon = iconPath;
+        } else {
+            // Use a simple default icon (Electron will provide one)
+            console.log('Warning: Icon file not found at', iconPath);
+            trayIcon = null;
+        }
+    } catch (error) {
+        console.log('Warning: Could not check for icon file:', error.message);
+        trayIcon = null;
+    }
+    
+    tray = trayIcon ? new Tray(trayIcon) : new Tray(nativeImage.createEmpty());
     
     const contextMenu = Menu.buildFromTemplate([
         {

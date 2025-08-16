@@ -14,8 +14,8 @@
     "dev": "nodemon --exec electron .",
     "cli": "node index.js",
     "cli:dev": "nodemon index.js",
-    "install:all": "npm install && cd render-ping && npm install",
-    "clean": "rimraf node_modules package-lock.json && cd render-ping && rimraf node_modules package-lock.json"
+    "test": "node test.js",
+    "clean": "rimraf node_modules package-lock.json"
   },
   "dependencies": {
     "chalk": "^4.1.2",

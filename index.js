@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const chalk = require('chalk');
 
 // Configuration with fallbacks
-const URL_TO_PING = process.env.URL_TO_PING || 'https://dhlqs-020-034-052-065-067.onrender.com';
+const URL_TO_PING = process.env.URL_TO_PING;
 const PING_INTERVAL = parseInt(process.env.PING_INTERVAL || '60000'); // 1 minute in milliseconds
 const TIMEOUT = parseInt(process.env.TIMEOUT || '5000'); // 5 seconds timeout
 
@@ -43,6 +43,14 @@ async function pingServer() {
     }
 }
 
+// Validate configuration
+if (!URL_TO_PING) {
+    console.error(chalk.red('Error: Please set URL_TO_PING environment variable'));
+    console.log(chalk.yellow('Create a .env file with: URL_TO_PING=https://your-app.onrender.com'));
+    console.log(chalk.yellow('Or run: URL_TO_PING=https://your-app.onrender.com npm run cli'));
+    process.exit(1);
+}
+
 // Handle graceful shutdown
 process.on('SIGINT', () => {
     console.log(chalk.yellow('\nGracefully shutting down...'));
@@ -51,8 +59,13 @@ process.on('SIGINT', () => {
 });
 
 // Initial ping
-console.log(chalk.cyan(`Starting ping service for ${URL_TO_PING}`));
-console.log(chalk.cyan(`Ping interval: ${PING_INTERVAL}ms`));
+console.log(chalk.cyan('='.repeat(50)));
+console.log(chalk.cyan(`🚀 Starting Render Ping CLI Service`));
+console.log(chalk.cyan(`📡 Target URL: ${URL_TO_PING}`));
+console.log(chalk.cyan(`⏱️  Ping interval: ${PING_INTERVAL}ms`));
+console.log(chalk.cyan(`⏰ Timeout: ${TIMEOUT}ms`));
+console.log(chalk.cyan('='.repeat(50)));
+
 pingServer();
 
 // Schedule regular pings
