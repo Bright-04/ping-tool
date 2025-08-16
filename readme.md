@@ -1,86 +1,101 @@
-# Render Ping Service
+# Ping Tool
 
-A robust Node.js service that pings multiple Render deployment URLs at regular intervals to prevent them from sleeping.
+A dual-interface ping service for keeping Render.com deployments awake by pinging them at regular intervals.
 
 ## Features
-- Supports multiple URLs for concurrent pinging
-- Configurable ping intervals per URL
-- Detailed logging with timestamp and status
-- Docker support for containerized deployment
-- Automatic retry on failed requests
-- Health check endpoint
-- Prometheus metrics support
+
+### Desktop Application (Electron)
+- ✅ Cross-platform desktop GUI with system tray support
+- ✅ Real-time ping monitoring with visual feedback
+- ✅ Configurable ping intervals and timeouts
+- ✅ Background operation when minimized to tray
+- ✅ Live logging with timestamps and response times
+
+### Command Line Interface  
+- ✅ Lightweight CLI service for server deployments
+- ✅ Configurable via environment variables
+- ✅ Colored console output with status indicators
+- ✅ Graceful shutdown handling
+- ✅ Process monitoring and error handling
 
 ## Requirements
-- Node.js 14.x or higher
+- Node.js 16.x or higher
 - npm (Node Package Manager)
-- Docker (optional)
 
 ## Installation
 
-### Standard Installation
 ```bash
+# Install all dependencies
 npm install
-```
-
-### Docker Installation
-```bash
-docker build -t render-ping-service .
-docker run -d -p 3000:3000 render-ping-service
-```
-
-## Configuration
-
-### Environment Variables
-Create a `.env` file:
-```bash
-# Required
-URLS_TO_PING=["https://app1.render.com","https://app2.render.com"]
-PING_INTERVAL=60000
-
-# Optional
-PORT=3000
-RETRY_ATTEMPTS=3
-RETRY_DELAY=5000
-METRICS_ENABLED=true
 ```
 
 ## Usage
 
-### Local Development
+### Desktop Application (GUI)
 ```bash
+# Start Electron desktop app
+npm start
+
+# Development mode with auto-restart
 npm run dev
 ```
 
-### Production
+### Command Line Interface
 ```bash
-npm start
+# Run CLI service
+npm run cli
+
+# CLI development mode
+npm run cli:dev
 ```
 
-### Docker
+## Configuration
+
+### Desktop Application
+Configure through the GUI interface:
+- **URL to Ping**: The Render deployment URL
+- **Interval (ms)**: Time between pings (default: 60000ms)  
+- **Timeout (ms)**: Request timeout (default: 5000ms)
+
+### CLI Service
+Create a `.env` file in the project root:
 ```bash
-docker-compose up
+# Required
+URL_TO_PING=https://your-app.onrender.com
+
+# Optional
+PING_INTERVAL=60000
+TIMEOUT=5000
 ```
 
-## API Endpoints
-- `GET /health` - Service health check
-- `GET /metrics` - Prometheus metrics
-- `GET /status` - Ping status for all URLs
+## Project Structure
+```
+ping-tool/
+├── main.js           # Electron main process
+├── index.html        # GUI interface  
+├── renderer.js       # Electron renderer process
+├── index.js          # CLI implementation
+├── ping.js           # Shared ping logic for GUI
+└── package.json      # Dependencies and scripts
+```
 
 ## Scripts
-- `npm start` - Production mode
-- `npm run dev` - Development mode with hot reload
-- `npm run lint` - Run ESLint
-- `npm run test` - Run tests
-- `npm run build` - Build for production
+- `npm start` - Launch Electron desktop application
+- `npm run dev` - Development mode for Electron app
+- `npm run cli` - Run CLI service
+- `npm run cli:dev` - CLI development mode with auto-restart
 
-## Monitoring
-- Built-in Prometheus metrics
-- Health check endpoint
-- Detailed logging with Winston
+## Environment Variables (CLI)
+- `URL_TO_PING`: The URL to ping (required for CLI)
+- `PING_INTERVAL`: Interval between pings in milliseconds (default: 60000)
+- `TIMEOUT`: Request timeout in milliseconds (default: 5000)
 
 ## License
-MIT License
+MIT License - see [LICENSE](LICENSE) file for details
 
 ## Contributing
-Contributions welcome! Please read our contributing guidelines first.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test both GUI and CLI interfaces
+5. Submit a pull request
